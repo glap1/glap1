@@ -8,25 +8,16 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 </head>
 <body class="bg-gray-100 flex items-center justify-center h-screen">
-  <div class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-sm">
-    <h2 class="text-2xl font-bold text-center mb-6">Iniciar Sesión</h2>
-    
-    <!-- Login con Google -->
-    <button id="google-login" class="w-full bg-red-500 text-white p-2 rounded-md hover:bg-red-600 mb-4">
-      Ingresar con Google
-    </button>
-    
-    <div class="text-center text-gray-500 text-sm mb-4">o con tu cuenta</div>
-
-    <!-- Login con Email y Contraseña -->
+  <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-sm">
+    <h2 class="text-2xl font-bold text-center mb-6">Iniciar sesión</h2>
     <form id="login-form" class="space-y-4">
       <div>
         <label class="block text-sm font-medium text-gray-700">Email</label>
-        <input type="email" id="email" class="mt-1 block w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400" required />
+        <input type="email" id="email" class="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400" required />
       </div>
       <div>
         <label class="block text-sm font-medium text-gray-700">Contraseña</label>
-        <input type="password" id="password" class="mt-1 block w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400" required />
+        <input type="password" id="password" class="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400" required />
       </div>
       <button type="submit" class="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700">Entrar</button>
       <p id="error" class="text-red-500 text-sm mt-2 hidden text-center"></p>
@@ -35,17 +26,16 @@
 
   <script>
     const supabase = supabase.createClient(
-      "https://ljoqirdbyaxbynfehjxo.supabase.co",
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxqb3FpcmRieWF4YnluZmVoanhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE5Mjc4MDksImV4cCI6MjA2NzUwMzgwOX0.MtlcX-0PMtPGZ-k2admrpjpnIIHAJD9s-omK9O4VoNU"
+      "https://TU_URL_SUPABASE.supabase.co",
+      "TU_CLAVE_PUBLICA"
     );
 
     const form = document.getElementById("login-form");
     const errorMsg = document.getElementById("error");
-    const googleBtn = document.getElementById("google-login");
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
-
+      errorMsg.classList.add("hidden");
       const email = document.getElementById("email").value;
       const password = document.getElementById("password").value;
 
@@ -55,23 +45,10 @@
       });
 
       if (error) {
-        errorMsg.textContent = "Email o contraseña incorrectos.";
+        errorMsg.textContent = "Usuario o contraseña incorrectos.";
         errorMsg.classList.remove("hidden");
       } else {
         window.location.href = "home.html";
-      }
-    });
-
-    googleBtn.addEventListener("click", async () => {
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: window.location.origin + "/home.html"
-        }
-      });
-
-      if (error) {
-        alert("Error al ingresar con Google: " + error.message);
       }
     });
   </script>
