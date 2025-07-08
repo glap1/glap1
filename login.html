@@ -30,27 +30,36 @@
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxqb3FpcmRieWF4YnluZmVoanhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE5Mjc4MDksImV4cCI6MjA2NzUwMzgwOX0.MtlcX-0PMtPGZ-k2admrpjpnIIHAJD9s-omK9O4VoNU"
     );
 
-    const form = document.getElementById("login-form");
-    const errorMsg = document.getElementById("error");
-
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      errorMsg.classList.add("hidden");
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
-
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      });
-
-      if (error) {
-        errorMsg.textContent = "Usuario o contraseña incorrectos.";
-        errorMsg.classList.remove("hidden");
-      } else {
-        window.location.href = "home.html";
-      }
-    });
   </script>
+  
+  <script>
+  
+    const form = document.getElementById('login-form')
+      form.addEventListener('submit', async (e) => {
+      e.preventDefault()
+
+      const email = document.getElementById('email').value
+      const password = document.getElementById('password').value
+  
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: email,
+          password: password,
+        })
+  
+        if (error) {
+          console.error('Login error:', error)
+          errorMsg.textContent = "Usuario o contraseña incorrectos.";
+          errorMsg.classList.remove("hidden");
+        } else {
+          console.log('Login successful:', data)
+          window.location.href = "home.html";
+        }
+      } catch (e) {
+        console.error('Unexpected error during login:', e)
+      }
+    })
+  </script>
+
 </body>
 </html>
