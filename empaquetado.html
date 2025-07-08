@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Empaquetado - Metflex</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen p-6">
+  <div class="max-w-4xl mx-auto">
+    <h1 class="text-2xl font-bold mb-4">Empaquetado de Pedidos</h1>
+
+    <!-- Lista de pedidos -->
+    <div class="mb-6">
+      <label for="pedidoSelect" class="block font-medium mb-1">Seleccionar Pedido:</label>
+      <select id="pedidoSelect" class="w-full p-2 border rounded">
+        <option value="">-- Seleccioná un pedido --</option>
+        <option value="pedido_1">Pedido #1001</option>
+        <option value="pedido_2">Pedido #1002</option>
+      </select>
+    </div>
+
+    <!-- Detalles del pedido -->
+    <div id="detallePedido" class="hidden bg-white p-4 rounded shadow">
+      <h2 class="text-xl font-semibold mb-4">Partes del Pedido</h2>
+      <table class="w-full table-auto border">
+        <thead>
+          <tr class="bg-gray-200">
+            <th class="p-2 border">SKU</th>
+            <th class="p-2 border">Descripción</th>
+            <th class="p-2 border">Cantidad</th>
+            <th class="p-2 border">Código de barra (serial)</th>
+          </tr>
+        </thead>
+        <tbody id="tablaPartes">
+          <!-- Rellenado dinámicamente -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    const pedidos = {
+      "pedido_1": [
+        { sku: "1234N", descripcion: "Tapa Negra", cantidad: 2 },
+        { sku: "5678B", descripcion: "Base Blanca", cantidad: 1 }
+      ],
+      "pedido_2": [
+        { sku: "1111C", descripcion: "Adaptador Gris Claro", cantidad: 3 }
+      ]
+    };
+
+    document.getElementById('pedidoSelect').addEventListener('change', function() {
+      const pedidoId = this.value;
+      const detalle = document.getElementById('detallePedido');
+      const tabla = document.getElementById('tablaPartes');
+      tabla.innerHTML = '';
+
+      if (!pedidoId || !pedidos[pedidoId]) {
+        detalle.classList.add('hidden');
+        return;
+      }
+
+      pedidos[pedidoId].forEach(p => {
+        for (let i = 0; i < p.cantidad; i++) {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td class="p-2 border">${p.sku}</td>
+            <td class="p-2 border">${p.descripcion}</td>
+            <td class="p-2 border text-center">${i + 1} / ${p.cantidad}</td>
+            <td class="p-2 border">
+              <input type="text" placeholder="Escanear o ingresar código" class="w-full border px-2 py-1 rounded" />
+            </td>
+          `;
+          tabla.appendChild(tr);
+        }
+      });
+
+      detalle.classList.remove('hidden');
+    });
+  </script>
+</body>
+</html>
