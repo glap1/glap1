@@ -24,12 +24,12 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-  
+
+
   <script>
-    const supabase = supabase.createClient(
-      "https://ljoqirdbyaxbynfehjxo.supabase.co",
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxqb3FpcmRieWF4YnluZmVoanhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE5Mjc4MDksImV4cCI6MjA2NzUwMzgwOX0.MtlcX-0PMtPGZ-k2admrpjpnIIHAJD9s-omK9O4VoNU"
-    );
+    const supabaseUrl = 'https://ljoqirdbyaxbynfehjxo.supabase.co'
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxqb3FpcmRieWF4YnluZmVoanhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE5Mjc4MDksImV4cCI6MjA2NzUwMzgwOX0.MtlcX-0PMtPGZ-k2admrpjpnIIHAJD9s-omK9O4VoNU'
+    const supabase = supabase.createClient(supabaseUrl, supabaseKey)
   </script>
   
   <script>
