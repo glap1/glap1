@@ -39,14 +39,11 @@
     const form = document.getElementById('login-form')
       form.addEventListener('submit', async (e) => {
       e.preventDefault()
-
-      const email = document.getElementById('email').value
-      const password = document.getElementById('password').value
   
-      try {
+      try {        
         const { data, error } = await supabase.auth.signInWithPassword({
-          email: email,
-          password: password,
+          email: document.getElementById('email').value,
+          password: document.getElementById('password').value,
         })
   
         if (error) {
