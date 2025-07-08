@@ -29,10 +29,10 @@
     // Initialize Supabase
     console.log("Initializing")
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-    import { signInWithPassword } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js';
     const supabaseUrl = 'https://ljoqirdbyaxbynfehjxo.supabase.co';
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxqb3FpcmRieWF4YnluZmVoanhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE5Mjc4MDksImV4cCI6MjA2NzUwMzgwOX0.MtlcX-0PMtPGZ-k2admrpjpnIIHAJD9s-omK9O4VoNU';
     const supabaseClient = await supabase.createClient(supabaseUrl, supabaseKey);
+    console.log('Supabase instance:', supabaseClient); // Optional: Check if initialized correctly
   
     const form = document.getElementById('login-form')
       form.addEventListener('submit', async (e) => {
@@ -42,7 +42,7 @@
     const password = document.getElementById("password").value;
   
       try {        
-        const { data, error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await supabaseClient.auth.signInWithPassword({
           email: email,
           password: password
         })
