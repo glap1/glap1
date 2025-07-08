@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Login</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 </head>
 <body class="bg-gray-100 flex items-center justify-center h-screen">
   <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-sm">
@@ -24,12 +23,13 @@
     </form>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  
   <script>
     const supabase = supabase.createClient(
       "https://ljoqirdbyaxbynfehjxo.supabase.co",
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxqb3FpcmRieWF4YnluZmVoanhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE5Mjc4MDksImV4cCI6MjA2NzUwMzgwOX0.MtlcX-0PMtPGZ-k2admrpjpnIIHAJD9s-omK9O4VoNU"
     );
-
   </script>
   
   <script>
