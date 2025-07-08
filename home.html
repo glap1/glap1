@@ -18,16 +18,19 @@
       Bienvenido al sistema. Acá podrás gestionar productos, stock, y más.
     </div>
   </div>
-
-  <script>
-    const supabase = supabase.createClient(
-      "https://ljoqirdbyaxbynfehjxo.supabase.co",
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxqb3FpcmRieWF4YnluZmVoanhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE5Mjc4MDksImV4cCI6MjA2NzUwMzgwOX0.MtlcX-0PMtPGZ-k2admrpjpnIIHAJD9s-omK9O4VoNU"
-    );
+  
+    <script type="module"> 
+    // Initialize Supabase
+    console.log("Initializing")
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    const supabaseUrl = 'https://ljoqirdbyaxbynfehjxo.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxqb3FpcmRieWF4YnluZmVoanhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE5Mjc4MDksImV4cCI6MjA2NzUwMzgwOX0.MtlcX-0PMtPGZ-k2admrpjpnIIHAJD9s-omK9O4VoNU';
+    const supabaseClient = await supabase.createClient(supabaseUrl, supabaseKey);
+    console.log('Supabase instance:', supabaseClient); // Optional: Check if initialized correctly
 
     document.addEventListener("DOMContentLoaded", async () => {
       // Verificamos si hay sesión
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await supabaseClient.auth.getSession();
       if (!session) {
         window.location.href = "login.html";
         return;
@@ -36,10 +39,11 @@
       // Configuramos el botón de logout
       const logoutBtn = document.getElementById("logout");
       logoutBtn.addEventListener("click", async () => {
-        await supabase.auth.signOut();
+        await supabaseClient.auth.signOut();
         window.location.href = "login.html";
       });
-    });
+      });
+      
   </script>
 </body>
 </html>
