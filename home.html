@@ -3,20 +3,19 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Panel</title>
+  <title>Metflex - Sistema</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 </head>
 <body class="bg-gray-100 min-h-screen">
   <div class="max-w-3xl mx-auto p-6">
     <div class="flex justify-between items-center mb-6">
-      <h1 class="text-3xl font-bold">Bienvenido al panel</h1>
+      <h1 class="text-3xl font-bold">Sistema de gestión Metflex</h1>
       <button id="logout" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">Cerrar sesión</button>
     </div>
 
-    <div class="bg-white p-6 rounded-xl shadow">
-      <p class="text-lg">Este es tu contenido privado.</p>
-      <!-- Acá podés cargar formularios, tablas, botones, etc. -->
+    <div class="bg-white p-6 rounded-xl shadow text-gray-800 text-lg">
+      Bienvenido al sistema. Acá podrás gestionar productos, stock, y más.
     </div>
   </div>
 
@@ -26,16 +25,13 @@
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxqb3FpcmRieWF4YnluZmVoanhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE5Mjc4MDksImV4cCI6MjA2NzUwMzgwOX0.MtlcX-0PMtPGZ-k2admrpjpnIIHAJD9s-omK9O4VoNU"
     );
 
-    // Verifica si el usuario está logueado
     async function checkSession() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        // No hay sesión → redirige al login
         window.location.href = "login.html";
       }
     }
 
-    // Cerrar sesión
     document.getElementById("logout").addEventListener("click", async () => {
       await supabase.auth.signOut();
       window.location.href = "login.html";
