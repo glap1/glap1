@@ -119,29 +119,7 @@
     const nrosSerieInputs = document.getElementById('nrosSerieInputs');
 
     skuInput.addEventListener('blur', async () => {
-      const sku = skuInput.value.trim();
-      if (!sku) return;
-
-      const { data, error } = await supabase
-        .from('partes')
-        .select('trazabilidad')
-        .eq('sku', sku)
-        .single();
-
-      if (error || !data) {
-        trazabilidadInfo.textContent = 'SKU no encontrado en la base de datos.';
-        trazabilidadInfo.classList.add('text-red-600');
-        nrosSerieContainer.classList.add('hidden');
-        return;
-      }
-
-      if (data.trazabilidad) {
-        trazabilidadInfo.textContent = 'Esta parte requiere trazabilidad. Se deben registrar unidades individuales.';
-        trazabilidadInfo.classList.remove('text-red-600');
-        nrosSerieContainer.classList.remove('hidden');
-
-        const cantidad = parseInt(cantidadInput.value) || 0;
-        nrosSerieInputs.innerHTML = '';
+      
         for (let i = 0; i < cantidad; i++) {
           const input = document.createElement('input');
           input.type = 'text';
