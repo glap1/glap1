@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gestión de Stock - Metflex</title>
+  <script src="https://cdn.tailwindcss.com">
+    // Mostrar resultados en búsqueda desde vista stock_real
+    const resultadosBody = document.getElementById('resultados');
+    const cargarResultados = async () => {
+      const { data, error } = await supabase.from('stock_real').select('*');
+      if (error) {
+        console.error('Error al cargar stock:', error);
+        return;
+      }
+      resultadosBody.innerHTML = '';
+      data.forEach(p => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="border p-2">${p.sku}</td>
+          <td class="border p-2">${p.nombre}</td>
+          <td class="border p-2">${p.stock_disponible}</td>
+          <td class="border p-2">${p.trazabilidad ? 'Sí' : 'No'}</td>
+          <td class="border p-2 text-center">—</td>
+        `;
+        resultadosBody.appendChild(tr);
+      });
+    };
+    document.getElementById('busquedaInput').addEventListener('input', async (e) => {
+  const filtro = e.target.value.toLowerCase();
+  const { data, error } = await supabase.from('stock_real').select('*');
+  if (error) {
+    console.error('Error al buscar stock:', error);
+    return;
+  }
+  resultadosBody.innerHTML = '';
+  data
+    .filter(p => p.sku.toLowerCase().includes(filtro) || p.nombre.toLowerCase().includes(filtro))
+    .forEach(p => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td class="border p-2">${p.sku}</td>
+        <td class="border p-2">${p.nombre}</td>
+        <td class="border p-2">${p.stock_disponible}</td>
+        <td class="border p-2">${p.trazabilidad ? 'Sí' : 'No'}</td>
+        <td class="border p-2 text-center">—</td>
+      `;
+      resultadosBody.appendChild(tr);
+    });
+});
+
+cargarResultados();
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+</head>
+<body class="bg-gray-50 min-h-screen p-6">
+  <div class="max-w-5xl mx-auto">
+    <h1 class="text-2xl font-bold mb-6">Gestión de Stock</h1>
+
+    <!-- Submenú -->
+    <div class="mb-6 space-x-4">
+      <button class="tab-btn bg-blue-500 text-white px-4 py-2 rounded" data-tab="alta">Alta de stock</button>
+      <button class="tab-btn bg-gray-300 text-black px-4 py-2 rounded" data-tab="baja">Baja de stock</button>
+      <button class="tab-btn bg-gray-300 text-black px-4 py-2 rounded" data-tab="busqueda">Búsqueda y modificación</button>
+    </div>
+
+    <!-- Secciones -->
+    <div id="alta" class="tab-section">
+      <h2 class="text-xl font-semibold mb-4">Alta de stock</h2>
+      <form class="space-y-4">
+        <div>
+          <label class="block font-medium">SKU</label>
+          <input id="skuInput" type="text" class="w-full border rounded px-3 py-2" placeholder="Ej: 1234N" />
+        </div>
+        <div>
+          <label class="block font-medium">Cantidad</label>
+          <input id="cantidadInput" type="number" class="w-full border rounded px-3 py-2" min="1" />
+        </div>
+        <div>
+          <label class="block font-medium">Ubicación (opcional)</label>
+          <input id="ubicacionInput" type="text" class="w-full border rounded px-3 py-2" />
+        </div>
+        <div id="trazabilidadInfo" class="text-sm text-gray-600"></div>
+        <div id="nrosSerieContainer" class="space-y-2 hidden">
+          <label class="block font-medium">Números de serie</label>
+          <div id="nrosSerieInputs" class="space-y-2"></div>
+        </div>
+        <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded">Cargar</button>
+      </form>
+    </div>
+
+    <div id="baja" class="tab-section hidden">
+      <h2 class="text-xl font-semibold mb-4">Baja de stock</h2>
+      <form class="space-y-4">
+        <div>
+          <label class="block font-medium">SKU o número de serie</label>
+          <input type="text" class="w-full border rounded px-3 py-2" />
+        </div>
+        <div>
+          <label class="block font-medium">Motivo</label>
+          <select class="w-full border rounded px-3 py-2">
+            <option>Daño</option>
+            <option>Vencimiento</option>
+            <option>Error</option>
+            <option>Otro</option>
+          </select>
+        </div>
+        <div>
+          <label class="block font-medium">Observaciones</label>
+          <textarea class="w-full border rounded px-3 py-2"></textarea>
+        </div>
+        <button type="submit" class="bg-red-500 text-white px-4 py-2 rounded">Registrar baja</button>
+      </form>
+    </div>
+
+    <div id="busqueda" class="tab-section hidden">
+      <h2 class="text-xl font-semibold mb-4">Búsqueda y modificación</h2>
+      <div class="mb-4">
+        <input id="busquedaInput" type="text" placeholder="Buscar por SKU o nombre" class="w-full border px-3 py-2 rounded" />
+      </div>
+      <table class="w-full table-auto border">
+        <thead class="bg-gray-200">
+          <tr>
+            <th class="p-2 border">SKU</th>
+            <th class="p-2 border">Nombre</th>
+            <th class="p-2 border">Stock</th>
+            <th class="p-2 border">Trazabilidad</th>
+            <th class="p-2 border">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="resultados">
+          
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script type="module">
+    const altaForm = document.querySelector('#alta form');
+    // Lógica para tabs
+    const tabs = document.querySelectorAll('.tab-btn');
+    const sections = document.querySelectorAll('.tab-section');
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        tabs.forEach(t => t.classList.remove('bg-blue-500', 'text-white'));
+        tabs.forEach(t => t.classList.add('bg-gray-300', 'text-black'));
+        tab.classList.add('bg-blue-500', 'text-white');
+        tab.classList.remove('bg-gray-300', 'text-black');
+        sections.forEach(section => section.classList.add('hidden'));
+        document.getElementById(tab.dataset.tab).classList.remove('hidden');
+      });
+    });
+
+    // Supabase setup
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    const supabaseUrl = 'https://ljoqirdbyaxbynfehjxo.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxqb3FpcmRieWF4YnluZmVoanhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE5Mjc4MDksImV4cCI6MjA2NzUwMzgwOX0.MtlcX-0PMtPGZ-k2admrpjpnIIHAJD9s-omK9O4VoNU';
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Detectar trazabilidad al tipear SKU
+    const skuInput = document.getElementById('skuInput');
+    const cantidadInput = document.getElementById('cantidadInput');
+    const trazabilidadInfo = document.getElementById('trazabilidadInfo');
+    const nrosSerieContainer = document.getElementById('nrosSerieContainer');
+    const nrosSerieInputs = document.getElementById('nrosSerieInputs');
+
+    skuInput.addEventListener('blur', async () => {
+      const sku = skuInput.value.trim();
+      if (!sku) return;
+
+      const { data, error } = await supabase
+        .from('partes')
+        .select('trazabilidad')
+        .eq('sku', sku)
+        .single();
+
+      if (error || !data) {
+        trazabilidadInfo.textContent = 'SKU no encontrado en la base de datos.';
+        trazabilidadInfo.classList.add('text-red-600');
+        nrosSerieContainer.classList.add('hidden');
+        return;
+      }
+
+      if (data.trazabilidad) {
+        trazabilidadInfo.textContent = 'Esta parte requiere trazabilidad. Se deben registrar unidades individuales.';
+        trazabilidadInfo.classList.remove('text-red-600');
+        nrosSerieContainer.classList.remove('hidden');
+
+        const cantidad = parseInt(cantidadInput.value) || 0;
+        nrosSerieInputs.innerHTML = '';
+        for (let i = 0; i < cantidad; i++) {
+          const input = document.createElement('input');
+          input.type = 'text';
+          input.placeholder = `Nro. serie unidad ${i + 1}`;
+          input.className = 'w-full border rounded px-3 py-2';
+          nrosSerieInputs.appendChild(input);
+        }
+
+      } else {
+        trazabilidadInfo.textContent = 'Esta parte no requiere trazabilidad. Se sumará al stock total.';
+        trazabilidadInfo.classList.remove('text-red-600');
+        nrosSerieContainer.classList.add('hidden');
+        nrosSerieInputs.innerHTML = '';
+      }
+    });
+
+    cantidadInput.addEventListener('change', () => {
+      if (!nrosSerieContainer.classList.contains('hidden')) {
+        skuInput.dispatchEvent(new Event('blur'));
+      }
+    });
+
+    // Alta de stock
+    altaForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const sku = skuInput.value.trim();
+      const cantidad = parseInt(cantidadInput.value);
+      const ubicacion = document.getElementById('ubicacionInput').value.trim();
+
+      if (!sku || isNaN(cantidad) || cantidad < 1) {
+        alert('SKU y cantidad son obligatorios');
+        return;
+      }
+
+      const { data: parte, error } = await supabase
+        .from('partes')
+        .select('trazabilidad')
+        .eq('sku', sku)
+        .single();
+
+      if (error || !parte) {
+        alert('SKU no encontrado');
+        return;
+      }
+
+      if (parte.trazabilidad) {
+        const inputs = Array.from(nrosSerieInputs.querySelectorAll('input'));
+        const numerosSerie = inputs.map(i => i.value.trim()).filter(v => v);
+        if (numerosSerie.length !== cantidad) {
+          alert('Debés ingresar todos los números de serie.');
+          return;
+        }
+
+        for (const serie of numerosSerie) {
+          await supabase.from('movimientos').insert({
+            tipo: 'entrada',
+            parte_sku: sku,
+            cantidad: 1
+          });
+        }
+
+      } else {
+        await supabase.from('movimientos').insert({
+          tipo: 'entrada',
+          parte_sku: sku,
+          cantidad
+        });
+      }
+
+      alert('Stock cargado correctamente');
+      altaForm.reset();
+      trazabilidadInfo.textContent = '';
+      nrosSerieContainer.classList.add('hidden');
+      nrosSerieInputs.innerHTML = '';
+    });
+      }
+    });
+  </script>
+</body>
+</html>
