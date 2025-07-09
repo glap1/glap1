@@ -4,53 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Gestión de Stock - Metflex</title>
-  <script src="https://cdn.tailwindcss.com">
-    // Mostrar resultados en búsqueda desde vista stock_real
-    const resultadosBody = document.getElementById('resultados');
-    const cargarResultados = async () => {
-      const { data, error } = await supabase.from('stock_real').select('*');
-      if (error) {
-        console.error('Error al cargar stock:', error);
-        return;
-      }
-      resultadosBody.innerHTML = '';
-      data.forEach(p => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td class="border p-2">${p.sku}</td>
-          <td class="border p-2">${p.nombre}</td>
-          <td class="border p-2">${p.stock_disponible}</td>
-          <td class="border p-2">${p.trazabilidad ? 'Sí' : 'No'}</td>
-          <td class="border p-2 text-center">—</td>
-        `;
-        resultadosBody.appendChild(tr);
-      });
-    };
-    document.getElementById('busquedaInput').addEventListener('input', async (e) => {
-  const filtro = e.target.value.toLowerCase();
-  const { data, error } = await supabase.from('stock_real').select('*');
-  if (error) {
-    console.error('Error al buscar stock:', error);
-    return;
-  }
-  resultadosBody.innerHTML = '';
-  data
-    .filter(p => p.sku.toLowerCase().includes(filtro) || p.nombre.toLowerCase().includes(filtro))
-    .forEach(p => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td class="border p-2">${p.sku}</td>
-        <td class="border p-2">${p.nombre}</td>
-        <td class="border p-2">${p.stock_disponible}</td>
-        <td class="border p-2">${p.trazabilidad ? 'Sí' : 'No'}</td>
-        <td class="border p-2 text-center">—</td>
-      `;
-      resultadosBody.appendChild(tr);
-    });
-});
-
-cargarResultados();
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 </head>
 <body class="bg-gray-50 min-h-screen p-6">
   <div class="max-w-5xl mx-auto">
@@ -90,26 +45,26 @@ cargarResultados();
 
     <div id="baja" class="tab-section hidden">
       <h2 class="text-xl font-semibold mb-4">Baja de stock</h2>
-      <form class="space-y-4">
-        <div>
-          <label class="block font-medium">SKU o número de serie</label>
-          <input type="text" class="w-full border rounded px-3 py-2" />
-        </div>
-        <div>
-          <label class="block font-medium">Motivo</label>
-          <select class="w-full border rounded px-3 py-2">
-            <option>Daño</option>
-            <option>Vencimiento</option>
-            <option>Error</option>
-            <option>Otro</option>
-          </select>
-        </div>
-        <div>
-          <label class="block font-medium">Observaciones</label>
-          <textarea class="w-full border rounded px-3 py-2"></textarea>
-        </div>
-        <button type="submit" class="bg-red-500 text-white px-4 py-2 rounded">Registrar baja</button>
-      </form>
+      <form id="bajaForm" class="space-y-4">
+  <div>
+    <label class="block font-medium">SKU o número de serie</label>
+    <input id="bajaInput" type="text" class="w-full border rounded px-3 py-2" />
+  </div>
+  <div>
+    <label class="block font-medium">Motivo</label>
+    <select id="bajaMotivo" class="w-full border rounded px-3 py-2">
+      <option>Daño</option>
+      <option>Vencimiento</option>
+      <option>Error</option>
+      <option>Otro</option>
+    </select>
+  </div>
+  <div>
+    <label class="block font-medium">Observaciones</label>
+    <textarea id="bajaObs" class="w-full border rounded px-3 py-2"></textarea>
+  </div>
+  <button type="submit" class="bg-red-500 text-white px-4 py-2 rounded">Registrar baja</button>
+</form>
     </div>
 
     <div id="busqueda" class="tab-section hidden">
@@ -211,7 +166,72 @@ cargarResultados();
 
     // Alta de stock
     altaForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
+  e.preventDefault();
+  const sku = skuInput.value.trim();
+  const cantidad = parseInt(cantidadInput.value);
+  const ubicacion = document.getElementById('ubicacionInput').value.trim();
+  if (!sku || isNaN(cantidad) || cantidad < 1) {
+    alert('SKU y cantidad son obligatorios');
+    return;
+  }
+  const { data: parte, error } = await supabase
+    .from('partes')
+    .select('trazabilidad')
+    .eq('sku', sku)
+    .single();
+  if (error || !parte) {
+    alert('SKU no encontrado');
+    return;
+  }
+  if (parte.trazabilidad) {
+    const inputs = Array.from(nrosSerieInputs.querySelectorAll('input'));
+    const numerosSerie = inputs.map(i => i.value.trim()).filter(v => v);
+    if (numerosSerie.length !== cantidad) {
+      alert('Debés ingresar todos los números de serie.');
+      return;
+    }
+    for (const serie of numerosSerie) {
+      await supabase.from('movimientos').insert({ tipo: 'entrada', parte_sku: sku, cantidad: 1 });
+    }
+  } else {
+    await supabase.from('movimientos').insert({ tipo: 'entrada', parte_sku: sku, cantidad });
+  }
+  alert('Stock cargado correctamente');
+  altaForm.reset();
+  trazabilidadInfo.textContent = '';
+  nrosSerieContainer.classList.add('hidden');
+  nrosSerieInputs.innerHTML = '';
+});
+
+// Baja de stock
+const bajaForm = document.querySelector('#bajaForm');
+bajaForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const valor = document.getElementById('bajaInput').value.trim();
+  const motivo = document.getElementById('bajaMotivo').value;
+  const obs = document.getElementById('bajaObs').value.trim();
+  if (!valor) {
+    alert('Debés ingresar un SKU o número de serie.');
+    return;
+  }
+  const { data: parte, error } = await supabase
+    .from('partes')
+    .select('sku, trazabilidad')
+    .or(`sku.eq.${valor},codigo.eq.${valor}`)
+    .limit(1);
+  if (error || parte.length === 0) {
+    alert('Parte no encontrada');
+    return;
+  }
+  const sku = parte[0].sku;
+  await supabase.from('movimientos').insert({
+    tipo: 'salida',
+    parte_sku: sku,
+    cantidad: 1
+  });
+  alert('Baja registrada');
+  bajaForm.reset();
+});
 
       const sku = skuInput.value.trim();
       const cantidad = parseInt(cantidadInput.value);
@@ -262,8 +282,6 @@ cargarResultados();
       trazabilidadInfo.textContent = '';
       nrosSerieContainer.classList.add('hidden');
       nrosSerieInputs.innerHTML = '';
-    });
-      }
     });
   </script>
 </body>
