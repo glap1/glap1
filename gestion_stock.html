@@ -4,34 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Gestión de Stock - Metflex</title>
-  <script src="https://cdn.tailwindcss.com">
-const altaProductoForm = document.getElementById('altaProductoForm');
-altaProductoForm.addEventListener('submit', async (e) => {
-  e.preventDefault();
-
-  const sku = document.getElementById('nuevoSku').value.trim();
-  const codigo = document.getElementById('nuevoCodigo').value.trim();
-  const color = document.getElementById('nuevoColor').value;
-  const nombre = document.getElementById('nuevoNombre').value.trim();
-  const trazabilidad = document.getElementById('nuevoTrazabilidad').checked;
-
-  const { error } = await supabaseClient.from('partes').insert({
-    sku,
-    codigo,
-    color,
-    nombre,
-    trazabilidad,
-    stock: 0
-  });
-
-  if (error) {
-    alert('Error al crear el producto');
-  } else {
-    alert('Producto creado correctamente');
-    altaProductoForm.reset();
-  }
-});
-</script>
+  <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 </head>
 <body class="bg-gray-50 min-h-screen p-6">
@@ -40,13 +13,14 @@ altaProductoForm.addEventListener('submit', async (e) => {
 
     <!-- Submenú -->
     <div class="mb-6 space-x-4">
+      <button class="tab-btn bg-gray-300 text-black px-4 py-2 rounded" data-tab="crear">Crear producto</button>
       <button class="tab-btn bg-blue-500 text-white px-4 py-2 rounded" data-tab="alta">Alta de stock</button>
       <button class="tab-btn bg-gray-300 text-black px-4 py-2 rounded" data-tab="baja">Baja de stock</button>
       <button class="tab-btn bg-gray-300 text-black px-4 py-2 rounded" data-tab="busqueda">Búsqueda y modificación</button>
     </div>
 
     <!-- Secciones -->
-    <div id="alta" class="tab-section">
+    <div id="crear" class="tab-section hidden">
       <h2 class="text-xl font-semibold mb-4">Alta de producto</h2>
       <form id="altaProductoForm" class="space-y-4 mb-8">
         <div>
@@ -76,6 +50,9 @@ altaProductoForm.addEventListener('submit', async (e) => {
         </div>
         <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Crear producto</button>
       </form>
+    </div>
+
+    <div id="alta" class="tab-section">
       <h2 class="text-xl font-semibold mb-4">Alta de stock</h2>
       <form id="altaForm" class="space-y-4">
         <div>
@@ -180,11 +157,22 @@ skuInput.addEventListener('blur', async () => {
   const sku = skuInput.value.trim();
   if (!sku) return;
 
-  const { data, error } = await supabaseClient
+  const { data: parte, error } = await supabaseClient
     .from('partes')
     .select('trazabilidad')
     .eq('sku', sku)
-    .single();
+    .maybeSingle();
+
+  if (!parte) {
+    trazabilidadInfo.textContent = 'SKU no encontrado';
+    trazabilidadInfo.classList.add('text-red-600');
+    nrosSerieContainer.classList.add('hidden');
+    nrosSerieInputs.innerHTML = '';
+    requiereTrazabilidad = false;
+    return;
+  }
+
+  requiereTrazabilidad = parte.trazabilidad;
 
   if (error || !data) {
     trazabilidadInfo.textContent = 'SKU no encontrado';
@@ -269,11 +257,11 @@ function actualizarCamposSerie() {
     }
 
     for (const serie of numerosSerie) {
-      await supabaseClient.from('movimientos').insert({
-        tipo: 'entrada',
-        parte_sku: sku,
-        cantidad: 1
-      });
+      const { error: movError } = await supabaseClient.from('movimientos').insert($1);
+    if (movError) {
+      alert('Error al registrar movimiento');
+      return;
+    }
     }
 
   } else {
