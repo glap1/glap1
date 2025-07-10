@@ -145,40 +145,7 @@
     // Alta de stock
     altaForm.addEventListener('submit', async (e) => {
   e.preventDefault();
-  const sku = skuInput.value.trim();
-  const cantidad = parseInt(cantidadInput.value);
-  const ubicacion = document.getElementById('ubicacionInput').value.trim();
-  if (!sku || isNaN(cantidad) || cantidad < 1) {
-    alert('SKU y cantidad son obligatorios');
-    return;
-  }
-  const { data: parte, error } = await supabase
-    .from('partes')
-    .select('trazabilidad')
-    .eq('sku', sku)
-    .single();
-  if (error || !parte) {
-    alert('SKU no encontrado');
-    return;
-  }
-  if (parte.trazabilidad) {
-    const inputs = Array.from(nrosSerieInputs.querySelectorAll('input'));
-    const numerosSerie = inputs.map(i => i.value.trim()).filter(v => v);
-    if (numerosSerie.length !== cantidad) {
-      alert('Debés ingresar todos los números de serie.');
-      return;
-    }
-    for (const serie of numerosSerie) {
-      await supabaseClient.from('movimientos').insert({ tipo: 'entrada', parte_sku: sku, cantidad: 1 });
-    }
-  } else {
-    await supabase.from('movimientos').insert({ tipo: 'entrada', parte_sku: sku, cantidad });
-  }
-  alert('Stock cargado correctamente');
-  altaForm.reset();
-  trazabilidadInfo.textContent = '';
-  nrosSerieContainer.classList.add('hidden');
-  nrosSerieInputs.innerHTML = '';
+  
 });
 
 // Baja de stock
