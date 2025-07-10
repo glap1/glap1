@@ -393,10 +393,6 @@ busquedaInput.addEventListener('input', async () => {
   const stockMap = Object.fromEntries((stocks || []).map(s => [s.sku, s.stock]));
   const data = partes.map(p => ({ ...p, stock: stockMap[p.sku] ?? 0 }));
 
-  
-    return;
-  }
-
   if (data.length === 0) {
     resultadosBody.innerHTML = '<tr><td colspan="5" class="p-2 text-gray-500">Sin resultados</td></tr>';
     return;
