@@ -4,7 +4,34 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Gestión de Stock - Metflex</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com">
+const altaProductoForm = document.getElementById('altaProductoForm');
+altaProductoForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const sku = document.getElementById('nuevoSku').value.trim();
+  const codigo = document.getElementById('nuevoCodigo').value.trim();
+  const color = document.getElementById('nuevoColor').value;
+  const nombre = document.getElementById('nuevoNombre').value.trim();
+  const trazabilidad = document.getElementById('nuevoTrazabilidad').checked;
+
+  const { error } = await supabaseClient.from('partes').insert({
+    sku,
+    codigo,
+    color,
+    nombre,
+    trazabilidad,
+    stock: 0
+  });
+
+  if (error) {
+    alert('Error al crear el producto');
+  } else {
+    alert('Producto creado correctamente');
+    altaProductoForm.reset();
+  }
+});
+</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 </head>
 <body class="bg-gray-50 min-h-screen p-6">
@@ -20,6 +47,35 @@
 
     <!-- Secciones -->
     <div id="alta" class="tab-section">
+      <h2 class="text-xl font-semibold mb-4">Alta de producto</h2>
+      <form id="altaProductoForm" class="space-y-4 mb-8">
+        <div>
+          <label class="block font-medium">SKU</label>
+          <input id="nuevoSku" type="text" class="w-full border rounded px-3 py-2" required />
+        </div>
+        <div>
+          <label class="block font-medium">Código</label>
+          <input id="nuevoCodigo" type="text" class="w-full border rounded px-3 py-2" required />
+        </div>
+        <div>
+          <label class="block font-medium">Color</label>
+          <select id="nuevoColor" class="w-full border rounded px-3 py-2" required>
+            <option value="N">Negro</option>
+            <option value="O">Gris oscuro</option>
+            <option value="C">Gris claro</option>
+            <option value="B">Blanco</option>
+          </select>
+        </div>
+        <div>
+          <label class="block font-medium">Nombre</label>
+          <input id="nuevoNombre" type="text" class="w-full border rounded px-3 py-2" required />
+        </div>
+        <div>
+          <label class="block font-medium">¿Requiere trazabilidad?</label>
+          <input id="nuevoTrazabilidad" type="checkbox" class="ml-2" />
+        </div>
+        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Crear producto</button>
+      </form>
       <h2 class="text-xl font-semibold mb-4">Alta de stock</h2>
       <form id="altaForm" class="space-y-4">
         <div>
@@ -192,10 +248,15 @@ function actualizarCamposSerie() {
     .from('partes')
     .select('trazabilidad')
     .eq('sku', sku)
-    .single();
+    .maybeSingle();
 
-  if (error || !parte) {
-    alert('SKU no encontrado');
+  if (!parte) {
+    alert('El SKU no existe en el sistema. Debés crear la parte primero.');
+    return;
+  }
+
+  if (error) {
+    alert('Ocurrió un error al verificar el SKU.');
     return;
   }
 
