@@ -377,7 +377,7 @@ busquedaInput.addEventListener('input', async () => {
 
   const { data, error } = await supabaseClient
     .from('partes')
-    .select('sku, nombre, trazabilidad, stock_calculado.stock')
+    .select('sku, nombre, trazabilidad, stock_calculado.stock as stock')
     .leftJoin('stock_calculado', 'partes.sku', 'stock_calculado.sku')
     .or(`sku.ilike.%${valor}%,nombre.ilike.%${valor}%`)
     .order('sku');
