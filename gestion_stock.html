@@ -382,7 +382,7 @@ busquedaInput.addEventListener('input', async () => {
     .order('sku');
 
   const { data: stocks, error: errorStocks } = await supabaseClient
-    .from('stock_calculado')
+    .from('stock_real')
     .select('sku, stock');
 
   if (errorPartes || errorStocks) {
