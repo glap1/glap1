@@ -362,6 +362,47 @@ altaProductoForm.addEventListener('submit', async (e) => {
     altaProductoForm.reset();
   }
 });
+
+
+// Búsqueda y modificación
+const busquedaInput = document.getElementById('busquedaInput');
+const resultadosBody = document.getElementById('resultados');
+
+busquedaInput.addEventListener('input', async () => {
+  const valor = busquedaInput.value.trim();
+  if (!valor) {
+    resultadosBody.innerHTML = '';
+    return;
+  }
+
+  const { data, error } = await supabaseClient
+    .from('partes')
+    .select('sku, nombre, stock, trazabilidad')
+    .or(`sku.ilike.%${valor}%,nombre.ilike.%${valor}%`)
+    .order('sku');
+
+  if (error) {
+    resultadosBody.innerHTML = '<tr><td colspan="5" class="p-2 text-red-500">Error al buscar</td></tr>';
+    return;
+  }
+
+  if (data.length === 0) {
+    resultadosBody.innerHTML = '<tr><td colspan="5" class="p-2 text-gray-500">Sin resultados</td></tr>';
+    return;
+  }
+
+  resultadosBody.innerHTML = data.map(p => `
+    <tr>
+      <td class="p-2 border">${p.sku}</td>
+      <td class="p-2 border">${p.nombre}</td>
+      <td class="p-2 border">${p.stock}</td>
+      <td class="p-2 border">${p.trazabilidad ? 'Sí' : 'No'}</td>
+      <td class="p-2 border text-center">
+        <button class="bg-yellow-500 text-white px-2 py-1 rounded text-sm">Editar</button>
+      </td>
+    </tr>
+  `).join('');
+});
 </script>
 </body>
 </html>
