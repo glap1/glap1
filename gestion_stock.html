@@ -70,8 +70,8 @@
     </div>
 
     <div id="baja" class="tab-section hidden">
-      <h2 class="text-xl font-semibold mb-4">Baja de stock</h2>
-      $1
+  <h2 class="text-xl font-semibold mb-4">Baja de stock</h2>
+  <form id="bajaForm" class="space-y-4">
   <div>
     <label class="block font-medium">Cantidad</label>
     <input id="bajaCantidad" type="number" class="w-full border rounded px-3 py-2" min="1" value="1" />
@@ -90,7 +90,7 @@
     <textarea id="bajaObs" class="w-full border rounded px-3 py-2"></textarea>
   </div>
   <button type="submit" class="bg-red-500 text-white px-4 py-2 rounded">Registrar baja</button>
-</form>
+  </form>
     </div>
 
     <div id="busqueda" class="tab-section hidden">
@@ -255,12 +255,24 @@ if (movError || !movimientoInsertado) {
 const movimiento_id = movimientoInsertado.id;
 
 const inputs = Array.from(nrosSerieInputs.querySelectorAll('input'));
-const unidades = inputs.map(i => ({
-  sku,
-  nro_serie: i.value.trim(),
-  ubicacion,
-  movimiento_id
-}));
+const unidades = [];
+for (let input of inputs) {
+  const nroSerie = input.value.trim();
+  if (!nroSerie) continue;
+
+  const { data: existente, error: errorCheck } = await supabaseClient
+    .from('partes_unidades')
+    .select('id')
+    .eq('nro_serie', nroSerie)
+    .maybeSingle();
+
+  if (existente) {
+    alert(`El número de serie ${nroSerie} ya existe en el sistema.`);
+    return;
+  }
+
+  unidades.push({ sku, nro_serie: nroSerie, ubicacion, movimiento_id });
+}
 
 const { error: unidadesError } = await supabaseClient.from('partes_unidades').insert(unidades);
 
