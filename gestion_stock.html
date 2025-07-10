@@ -71,10 +71,10 @@
 
     <div id="baja" class="tab-section hidden">
       <h2 class="text-xl font-semibold mb-4">Baja de stock</h2>
-      <form id="bajaForm" class="space-y-4">
+      $1
   <div>
-    <label class="block font-medium">SKU o número de serie</label>
-    <input id="bajaInput" type="text" class="w-full border rounded px-3 py-2" />
+    <label class="block font-medium">Cantidad</label>
+    <input id="bajaCantidad" type="number" class="w-full border rounded px-3 py-2" min="1" value="1" />
   </div>
   <div>
     <label class="block font-medium">Motivo</label>
@@ -295,10 +295,11 @@ bajaForm.addEventListener('submit', async (e) => {
     return;
   }
   const sku = parte.sku;
+  const cantidad = parseInt(document.getElementById('bajaCantidad').value) || 1;
   await supabaseClient.from('movimientos').insert({
     tipo: 'salida',
     parte_sku: sku,
-    cantidad: 1
+    cantidad
   });
   alert('Baja registrada');
   bajaForm.reset();
