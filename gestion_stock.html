@@ -283,6 +283,10 @@ const { error: unidadesError } = await supabaseClient.from('partes_unidades').in
 if (unidadesError) {
   alert('Error al registrar unidades individuales');
   return;
+}
+  }
+
+
   } else {
     const { error: movError } = await supabaseClient.from('movimientos').insert({
       tipo: 'entrada',
