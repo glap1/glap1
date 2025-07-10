@@ -21,7 +21,7 @@
     <!-- Secciones -->
     <div id="alta" class="tab-section">
       <h2 class="text-xl font-semibold mb-4">Alta de stock</h2>
-      <form class="space-y-4">
+      <form id="altaForm" class="space-y-4">
         <div>
           <label class="block font-medium">SKU</label>
           <input id="skuInput" type="text" class="w-full border rounded px-3 py-2" placeholder="Ej: 1234N" />
@@ -90,7 +90,7 @@
   </div>
 
   <script type="module">
-    const altaForm = document.querySelector('#alta form');
+    const altaForm = document.querySelector('#altaForm');
     // Lógica para tabs
     const tabs = document.querySelectorAll('.tab-btn');
     const sections = document.querySelectorAll('.tab-section');
@@ -107,7 +107,7 @@
 
     // Supabase setup
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-    const supabaseUrl = 'https://ljoqirdbyaxbynfehjxo.supabaseClient.co';
+    const supabaseUrl = 'https://ljoqirdbyaxbynfehjxo.supabase.co';
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxqb3FpcmRieWF4YnluZmVoanhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE5Mjc4MDksImV4cCI6MjA2NzUwMzgwOX0.MtlcX-0PMtPGZ-k2admrpjpnIIHAJD9s-omK9O4VoNU';
     const supabaseClient = createClient(supabaseUrl, supabaseKey);
 
@@ -119,33 +119,99 @@
     const nrosSerieInputs = document.getElementById('nrosSerieInputs');
 
     skuInput.addEventListener('blur', async () => {
-      
-        for (let i = 0; i < cantidad; i++) {
-          const input = document.createElement('input');
-          input.type = 'text';
-          input.placeholder = `Nro. serie unidad ${i + 1}`;
-          input.className = 'w-full border rounded px-3 py-2';
-          nrosSerieInputs.appendChild(input);
-        }
+  const sku = skuInput.value.trim();
+  if (!sku) return;
 
-      } else {
-        trazabilidadInfo.textContent = 'Esta parte no requiere trazabilidad. Se sumará al stock total.';
-        trazabilidadInfo.classList.remove('text-red-600');
-        nrosSerieContainer.classList.add('hidden');
-        nrosSerieInputs.innerHTML = '';
-      }
-    });
+  const { data, error } = await supabaseClient
+    .from('partes')
+    .select('trazabilidad')
+    .eq('sku', sku)
+    .single();
 
-    cantidadInput.addEventListener('change', () => {
-      if (!nrosSerieContainer.classList.contains('hidden')) {
-        skuInput.dispatchEvent(new Event('blur'));
-      }
-    });
+  if (error || !data) {
+    trazabilidadInfo.textContent = 'SKU no encontrado';
+    trazabilidadInfo.classList.add('text-red-600');
+    nrosSerieContainer.classList.add('hidden');
+    nrosSerieInputs.innerHTML = '';
+    return;
+  }
+
+  if (data.trazabilidad) {
+    trazabilidadInfo.textContent = 'Esta parte requiere trazabilidad. Ingresá los números de serie.';
+    trazabilidadInfo.classList.add('text-red-600');
+    nrosSerieContainer.classList.remove('hidden');
+    nrosSerieInputs.innerHTML = '';
+    const cantidad = parseInt(cantidadInput.value);
+    for (let i = 0; i < cantidad; i++) {
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.placeholder = `Nro. serie unidad ${i + 1}`;
+      input.className = 'w-full border rounded px-3 py-2';
+      nrosSerieInputs.appendChild(input);
+    }
+  } else {
+    trazabilidadInfo.textContent = 'Esta parte no requiere trazabilidad. Se sumará al stock total.';
+    trazabilidadInfo.classList.remove('text-red-600');
+    nrosSerieContainer.classList.add('hidden');
+    nrosSerieInputs.innerHTML = '';
+  }
+});
+
+    
 
     // Alta de stock
     altaForm.addEventListener('submit', async (e) => {
   e.preventDefault();
-  
+
+  const sku = skuInput.value.trim();
+  const cantidad = parseInt(cantidadInput.value);
+  const ubicacion = document.getElementById('ubicacionInput').value.trim();
+
+  if (!sku || isNaN(cantidad) || cantidad < 1) {
+    alert('SKU y cantidad son obligatorios');
+    return;
+  }
+
+  const { data: parte, error } = await supabaseClient
+    .from('partes')
+    .select('trazabilidad')
+    .eq('sku', sku)
+    .single();
+
+  if (error || !parte) {
+    alert('SKU no encontrado');
+    return;
+  }
+
+  if (parte.trazabilidad) {
+    const inputs = Array.from(nrosSerieInputs.querySelectorAll('input'));
+    const numerosSerie = inputs.map(i => i.value.trim()).filter(v => v);
+    if (numerosSerie.length !== cantidad) {
+      alert('Debés ingresar todos los números de serie.');
+      return;
+    }
+
+    for (const serie of numerosSerie) {
+      await supabaseClient.from('movimientos').insert({
+        tipo: 'entrada',
+        parte_sku: sku,
+        cantidad: 1
+      });
+    }
+
+  } else {
+    await supabaseClient.from('movimientos').insert({
+      tipo: 'entrada',
+      parte_sku: sku,
+      cantidad
+    });
+  }
+
+  alert('Stock cargado correctamente');
+  altaForm.reset();
+  trazabilidadInfo.textContent = '';
+  nrosSerieContainer.classList.add('hidden');
+  nrosSerieInputs.innerHTML = '';
 });
 
 // Baja de stock
@@ -159,7 +225,7 @@ bajaForm.addEventListener('submit', async (e) => {
     alert('Debés ingresar un SKU o número de serie.');
     return;
   }
-  const { data: parte, error } = await supabase
+  const { data: parte, error } = await supabaseClient
     .from('partes')
     .select('sku, trazabilidad')
     .or(`sku.eq.${valor},codigo.eq.${valor}`)
@@ -169,7 +235,7 @@ bajaForm.addEventListener('submit', async (e) => {
     return;
   }
   const sku = parte[0].sku;
-  await supabase.from('movimientos').insert({
+  await supabaseClient.from('movimientos').insert({
     tipo: 'salida',
     parte_sku: sku,
     cantidad: 1
@@ -178,55 +244,7 @@ bajaForm.addEventListener('submit', async (e) => {
   bajaForm.reset();
 });
 
-      const sku = skuInput.value.trim();
-      const cantidad = parseInt(cantidadInput.value);
-      const ubicacion = document.getElementById('ubicacionInput').value.trim();
-
-      if (!sku || isNaN(cantidad) || cantidad < 1) {
-        alert('SKU y cantidad son obligatorios');
-        return;
-      }
-
-      const { data: parte, error } = await supabase
-        .from('partes')
-        .select('trazabilidad')
-        .eq('sku', sku)
-        .single();
-
-      if (error || !parte) {
-        alert('SKU no encontrado');
-        return;
-      }
-
-      if (parte.trazabilidad) {
-        const inputs = Array.from(nrosSerieInputs.querySelectorAll('input'));
-        const numerosSerie = inputs.map(i => i.value.trim()).filter(v => v);
-        if (numerosSerie.length !== cantidad) {
-          alert('Debés ingresar todos los números de serie.');
-          return;
-        }
-
-        for (const serie of numerosSerie) {
-          await supabase.from('movimientos').insert({
-            tipo: 'entrada',
-            parte_sku: sku,
-            cantidad: 1
-          });
-        }
-
-      } else {
-        await supabase.from('movimientos').insert({
-          tipo: 'entrada',
-          parte_sku: sku,
-          cantidad
-        });
-      }
-
-      alert('Stock cargado correctamente');
-      altaForm.reset();
-      trazabilidadInfo.textContent = '';
-      nrosSerieContainer.classList.add('hidden');
-      nrosSerieInputs.innerHTML = '';
+      
     });
   </script>
 </body>
