@@ -382,15 +382,14 @@ busquedaInput.addEventListener('input', async () => {
     .order('sku');
 
   const { data: stocks, error: errorStocks } = await supabaseClient
-    .from('stock_real')
-    .select('sku, stock_disponible');
+    .from('stock_real').select('sku, stock_disponible');
 
   if (errorPartes || errorStocks) {
     resultadosBody.innerHTML = '<tr><td colspan="5" class="p-2 text-red-500">Error al buscar</td></tr>';
     return;
   }
 
-  const stockMap = Object.fromEntries((stocks || []).map(s => [s.sku, s.stock]));
+  const stockMap = Object.fromEntries((stocks || []).map(s => [s.sku, s.stock_disponible]));
   const data = partes.map(p => ({ ...p, stock: stockMap[p.sku] ?? 0 }));
 
   if (data.length === 0) {
