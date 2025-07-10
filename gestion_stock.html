@@ -112,13 +112,15 @@
     const supabaseClient = createClient(supabaseUrl, supabaseKey);
 
     // Detectar trazabilidad al tipear SKU
-    const skuInput = document.getElementById('skuInput');
-    const cantidadInput = document.getElementById('cantidadInput');
-    const trazabilidadInfo = document.getElementById('trazabilidadInfo');
-    const nrosSerieContainer = document.getElementById('nrosSerieContainer');
-    const nrosSerieInputs = document.getElementById('nrosSerieInputs');
+const skuInput = document.getElementById('skuInput');
+const cantidadInput = document.getElementById('cantidadInput');
+const trazabilidadInfo = document.getElementById('trazabilidadInfo');
+const nrosSerieContainer = document.getElementById('nrosSerieContainer');
+const nrosSerieInputs = document.getElementById('nrosSerieInputs');
 
-    skuInput.addEventListener('blur', async () => {
+let requiereTrazabilidad = false;
+
+skuInput.addEventListener('blur', async () => {
   const sku = skuInput.value.trim();
   if (!sku) return;
 
@@ -133,29 +135,43 @@
     trazabilidadInfo.classList.add('text-red-600');
     nrosSerieContainer.classList.add('hidden');
     nrosSerieInputs.innerHTML = '';
+    requiereTrazabilidad = false;
     return;
   }
 
-  if (data.trazabilidad) {
+  requiereTrazabilidad = data.trazabilidad;
+
+  if (requiereTrazabilidad) {
     trazabilidadInfo.textContent = 'Esta parte requiere trazabilidad. Ingresá los números de serie.';
     trazabilidadInfo.classList.add('text-red-600');
     nrosSerieContainer.classList.remove('hidden');
-    nrosSerieInputs.innerHTML = '';
-    const cantidad = parseInt(cantidadInput.value);
-    for (let i = 0; i < cantidad; i++) {
-      const input = document.createElement('input');
-      input.type = 'text';
-      input.placeholder = `Nro. serie unidad ${i + 1}`;
-      input.className = 'w-full border rounded px-3 py-2';
-      nrosSerieInputs.appendChild(input);
-    }
   } else {
     trazabilidadInfo.textContent = 'Esta parte no requiere trazabilidad. Se sumará al stock total.';
     trazabilidadInfo.classList.remove('text-red-600');
     nrosSerieContainer.classList.add('hidden');
     nrosSerieInputs.innerHTML = '';
   }
+  actualizarCamposSerie();
 });
+
+cantidadInput.addEventListener('change', () => {
+  if (requiereTrazabilidad) {
+    actualizarCamposSerie();
+  }
+});
+
+function actualizarCamposSerie() {
+  const cantidad = parseInt(cantidadInput.value);
+  nrosSerieInputs.innerHTML = '';
+  if (isNaN(cantidad) || cantidad < 1) return;
+  for (let i = 0; i < cantidad; i++) {
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.placeholder = `Nro. serie unidad ${i + 1}`;
+    input.className = 'w-full border rounded px-3 py-2';
+    nrosSerieInputs.appendChild(input);
+  }
+}
 
     
 
@@ -243,9 +259,6 @@ bajaForm.addEventListener('submit', async (e) => {
   alert('Baja registrada');
   bajaForm.reset();
 });
-
-      
-    });
-  </script>
+</script>
 </body>
 </html>
