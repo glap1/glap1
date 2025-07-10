@@ -12,7 +12,7 @@
 <script type="module">
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
   const supabaseUrl = 'https://ljoqirdbyaxbynfehjxo.supabase.co';
-  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxqb3FpcmRieWF4YnluZmVoanhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE5Mjc4MDksImV4cCI6MjA2NzUwMzgwOX0.MtlcX-0PMtPGZ-k2admrpjpnIIHAJD9s-omK9O4VoNU';
+  const supabaseKey = 'eyJ...VoNU';
   const supabaseClient = await createClient(supabaseUrl, supabaseKey);
 
   document.addEventListener("DOMContentLoaded", async () => {
@@ -51,6 +51,7 @@
   </div>
   <nav class="bg-gray-100 border-t border-b py-2">
     <div class="max-w-6xl mx-auto px-4 flex space-x-6">
+      <a href="#" class="menu-link text-gray-700 hover:underline" data-target="pedidos.html">Pedidos</a>
       <a href="#" class="menu-link text-gray-700 hover:underline" data-target="empaquetado.html">Empaquetado</a>
       <a href="#" class="menu-link text-gray-700 hover:underline" data-target="gestion_stock.html">Gestión de stock</a>
     </div>
