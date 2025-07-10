@@ -383,7 +383,7 @@ busquedaInput.addEventListener('input', async () => {
 
   const { data: stocks, error: errorStocks } = await supabaseClient
     .from('stock_real')
-    .select('sku, stock');
+    .select('sku, stock_disponible');
 
   if (errorPartes || errorStocks) {
     resultadosBody.innerHTML = '<tr><td colspan="5" class="p-2 text-red-500">Error al buscar</td></tr>';
