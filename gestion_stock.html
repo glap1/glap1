@@ -294,7 +294,7 @@ bajaForm.addEventListener('submit', async (e) => {
     alert('Parte no encontrada');
     return;
   }
-  const sku = parte[0].sku;
+  const sku = parte.sku;
   await supabaseClient.from('movimientos').insert({
     tipo: 'salida',
     parte_sku: sku,
@@ -375,15 +375,25 @@ busquedaInput.addEventListener('input', async () => {
     return;
   }
 
-  const { data, error } = await supabaseClient
+  const { data: partes, error: errorPartes } = await supabaseClient
     .from('partes')
-    .select('sku, nombre, trazabilidad, stock_calculado.stock as stock')
-    .leftJoin('stock_calculado', 'partes.sku', 'stock_calculado.sku')
+    .select('sku, nombre, trazabilidad')
     .or(`sku.ilike.%${valor}%,nombre.ilike.%${valor}%`)
     .order('sku');
 
-  if (error) {
+  const { data: stocks, error: errorStocks } = await supabaseClient
+    .from('stock_calculado')
+    .select('sku, stock');
+
+  if (errorPartes || errorStocks) {
     resultadosBody.innerHTML = '<tr><td colspan="5" class="p-2 text-red-500">Error al buscar</td></tr>';
+    return;
+  }
+
+  const stockMap = Object.fromEntries((stocks || []).map(s => [s.sku, s.stock]));
+  const data = partes.map(p => ({ ...p, stock: stockMap[p.sku] ?? 0 }));
+
+  
     return;
   }
 
