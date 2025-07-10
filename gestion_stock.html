@@ -5,66 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Gestión de Stock - Metflex</title>
   <script src="https://cdn.tailwindcss.com"></script>
-<script>
-const altaProductoForm = document.getElementById('altaProductoForm');
-altaProductoForm.addEventListener('submit', async (e) => {
-  e.preventDefault();
 
-  const baseSku = document.getElementById('nuevoSku').value.trim();
-  const tieneColor = document.getElementById('nuevoColor').checked;
-  const nombre = document.getElementById('nuevoNombre').value.trim();
-  const trazabilidad = document.getElementById('nuevoTrazabilidad').checked;
-
-  const colores = [
-    { codigo: 'N', nombre: 'Negro' },
-    { codigo: 'O', nombre: 'Gris oscuro' },
-    { codigo: 'C', nombre: 'Gris claro' },
-    { codigo: 'B', nombre: 'Blanco' }
-  ];
-
-  const productos = tieneColor
-    ? colores.map(c => ({
-        sku: `${baseSku}${c.codigo}`,
-        nombre: `${nombre} ${c.nombre}`,
-        color: c.codigo,
-        trazabilidad,
-        stock: 0
-      }))
-    : [{
-        sku: baseSku,
-        nombre,
-        color: null,
-        trazabilidad,
-        stock: 0
-      }];
-
-  const skus = productos.map(p => p.sku);
-  const { data: existentes, error: errorExistencia } = await supabaseClient
-    .from('partes')
-    .select('sku')
-    .in('sku', skus);
-
-  if (errorExistencia) {
-    alert('Error al verificar existencia de productos');
-    return;
-  }
-
-  if (existentes && existentes.length > 0) {
-    const duplicados = existentes.map(e => e.sku).join(', ');
-    alert(`Ya existen los siguientes SKU: ${duplicados}`);
-    return;
-  }
-
-  const { error } = await supabaseClient.from('partes').insert(productos);
-
-  if (error) {
-    alert('Error al crear el producto');
-  } else {
-    alert(`Se crearon ${productos.length} producto(s) correctamente.`);
-    altaProductoForm.reset();
-  }
-});
-</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 </head>
 <body class="bg-gray-50 min-h-screen p-6">
@@ -361,6 +302,65 @@ bajaForm.addEventListener('submit', async (e) => {
   });
   alert('Baja registrada');
   bajaForm.reset();
+});
+
+const altaProductoForm = document.getElementById('altaProductoForm');
+altaProductoForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const baseSku = document.getElementById('nuevoSku').value.trim();
+  const tieneColor = document.getElementById('nuevoColor').checked;
+  const nombre = document.getElementById('nuevoNombre').value.trim();
+  const trazabilidad = document.getElementById('nuevoTrazabilidad').checked;
+
+  const colores = [
+    { codigo: 'N', nombre: 'Negro' },
+    { codigo: 'O', nombre: 'Gris oscuro' },
+    { codigo: 'C', nombre: 'Gris claro' },
+    { codigo: 'B', nombre: 'Blanco' }
+  ];
+
+  const productos = tieneColor
+    ? colores.map(c => ({
+        sku: `${baseSku}${c.codigo}`,
+        nombre: `${nombre} ${c.nombre}`,
+        color: c.codigo,
+        trazabilidad,
+        stock: 0
+      }))
+    : [{
+        sku: baseSku,
+        nombre,
+        color: null,
+        trazabilidad,
+        stock: 0
+      }];
+
+  const skus = productos.map(p => p.sku);
+  const { data: existentes, error: errorExistencia } = await supabaseClient
+    .from('partes')
+    .select('sku')
+    .in('sku', skus);
+
+  if (errorExistencia) {
+    alert('Error al verificar existencia de productos');
+    return;
+  }
+
+  if (existentes && existentes.length > 0) {
+    const duplicados = existentes.map(e => e.sku).join(', ');
+    alert(`Ya existen los siguientes SKU: ${duplicados}`);
+    return;
+  }
+
+  const { error } = await supabaseClient.from('partes').insert(productos);
+
+  if (error) {
+    alert('Error al crear el producto');
+  } else {
+    alert(`Se crearon ${productos.length} producto(s) correctamente.`);
+    altaProductoForm.reset();
+  }
 });
 </script>
 </body>
