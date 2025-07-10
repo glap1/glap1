@@ -241,17 +241,33 @@ function actualizarCamposSerie() {
       return;
     }
 
-    for (const serie of numerosSerie) {
-      const { error: movError } = await supabaseClient.from('movimientos').insert({
-        tipo: 'entrada',
-        parte_sku: sku,
-        cantidad: 1,
-        observacion: serie
-      });
-    if (movError) {
-      alert('Error al registrar movimiento');
-      return;
-    }
+    const { data: movimientoInsertado, error: movError } = await supabaseClient.from('movimientos').insert({
+  tipo: 'entrada',
+  parte_sku: sku,
+  cantidad
+}).select().maybeSingle();
+
+if (movError || !movimientoInsertado) {
+  alert('Error al registrar movimiento');
+  return;
+}
+
+const movimiento_id = movimientoInsertado.id;
+
+const inputs = Array.from(nrosSerieInputs.querySelectorAll('input'));
+const unidades = inputs.map(i => ({
+  sku,
+  nro_serie: i.value.trim(),
+  ubicacion,
+  movimiento_id
+}));
+
+const { error: unidadesError } = await supabaseClient.from('partes_unidades').insert(unidades);
+
+if (unidadesError) {
+  alert('Error al registrar unidades individuales');
+  return;
+}
     }
 
   } else {
