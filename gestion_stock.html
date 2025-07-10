@@ -377,7 +377,8 @@ busquedaInput.addEventListener('input', async () => {
 
   const { data, error } = await supabaseClient
     .from('partes')
-    .select('sku, nombre, stock, trazabilidad')
+    .select('sku, nombre, trazabilidad, stock_calculado.stock')
+    .leftJoin('stock_calculado', 'partes.sku', 'stock_calculado.sku')
     .or(`sku.ilike.%${valor}%,nombre.ilike.%${valor}%`)
     .order('sku');
 
@@ -395,7 +396,7 @@ busquedaInput.addEventListener('input', async () => {
     <tr>
       <td class="p-2 border">${p.sku}</td>
       <td class="p-2 border">${p.nombre}</td>
-      <td class="p-2 border">${p.stock}</td>
+      <td class="p-2 border">${p.stock ?? 0}</td>
       <td class="p-2 border">${p.trazabilidad ? 'Sí' : 'No'}</td>
       <td class="p-2 border text-center">
         <button class="bg-yellow-500 text-white px-2 py-1 rounded text-sm">Editar</button>
