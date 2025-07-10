@@ -107,9 +107,9 @@
 
     // Supabase setup
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-    const supabaseUrl = 'https://ljoqirdbyaxbynfehjxo.supabase.co';
+    const supabaseUrl = 'https://ljoqirdbyaxbynfehjxo.supabaseClient.co';
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxqb3FpcmRieWF4YnluZmVoanhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE5Mjc4MDksImV4cCI6MjA2NzUwMzgwOX0.MtlcX-0PMtPGZ-k2admrpjpnIIHAJD9s-omK9O4VoNU';
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const supabaseClient = createClient(supabaseUrl, supabaseKey);
 
     // Detectar trazabilidad al tipear SKU
     const skuInput = document.getElementById('skuInput');
@@ -169,7 +169,7 @@
       return;
     }
     for (const serie of numerosSerie) {
-      await supabase.from('movimientos').insert({ tipo: 'entrada', parte_sku: sku, cantidad: 1 });
+      await supabaseClient.from('movimientos').insert({ tipo: 'entrada', parte_sku: sku, cantidad: 1 });
     }
   } else {
     await supabase.from('movimientos').insert({ tipo: 'entrada', parte_sku: sku, cantidad });
