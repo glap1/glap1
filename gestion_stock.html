@@ -27,13 +27,10 @@
           <label class="block font-medium">SKU</label>
           <input id="nuevoSku" type="text" class="w-full border rounded px-3 py-2" required />
         </div>
-        <div>
-          <label class="block font-medium">Código</label>
-          <input id="nuevoCodigo" type="text" class="w-full border rounded px-3 py-2" required />
-        </div>
+        
         <div>
           <label class="block font-medium">Color</label>
-          <select id="nuevoColor" class="w-full border rounded px-3 py-2" required>
+          <select id="nuevoColor" class="w-full border rounded px-3 py-2">
             <option value="N">Negro</option>
             <option value="O">Gris oscuro</option>
             <option value="C">Gris claro</option>
@@ -174,17 +171,9 @@ skuInput.addEventListener('blur', async () => {
 
   requiereTrazabilidad = parte.trazabilidad;
 
-  if (error || !data) {
-    trazabilidadInfo.textContent = 'SKU no encontrado';
-    trazabilidadInfo.classList.add('text-red-600');
-    nrosSerieContainer.classList.add('hidden');
-    nrosSerieInputs.innerHTML = '';
-    requiereTrazabilidad = false;
-    return;
-  }
+  
 
-  requiereTrazabilidad = data.trazabilidad;
-
+  
   if (requiereTrazabilidad) {
     trazabilidadInfo.textContent = 'Esta parte requiere trazabilidad. Ingresá los números de serie.';
     trazabilidadInfo.classList.add('text-red-600');
@@ -257,7 +246,12 @@ function actualizarCamposSerie() {
     }
 
     for (const serie of numerosSerie) {
-      const { error: movError } = await supabaseClient.from('movimientos').insert($1);
+      const { error: movError } = await supabaseClient.from('movimientos').insert({
+        tipo: 'entrada',
+        parte_sku: sku,
+        cantidad: 1,
+        observacion: serie
+      });
     if (movError) {
       alert('Error al registrar movimiento');
       return;
@@ -265,11 +259,15 @@ function actualizarCamposSerie() {
     }
 
   } else {
-    await supabaseClient.from('movimientos').insert({
+    const { error: movError } = await supabaseClient.from('movimientos').insert({
       tipo: 'entrada',
       parte_sku: sku,
       cantidad
     });
+    if (movError) {
+      alert('Error al registrar movimiento');
+      return;
+    }
   }
 
   alert('Stock cargado correctamente');
@@ -293,7 +291,7 @@ bajaForm.addEventListener('submit', async (e) => {
   const { data: parte, error } = await supabaseClient
     .from('partes')
     .select('sku, trazabilidad')
-    .or(`sku.eq.${valor},codigo.eq.${valor}`)
+    .eq('sku', valor)
     .limit(1);
   if (error || parte.length === 0) {
     alert('Parte no encontrada');
