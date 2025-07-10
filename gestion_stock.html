@@ -234,7 +234,7 @@ function actualizarCamposSerie() {
   }
 
   if (parte.trazabilidad) {
-    const inputs = Array.from(nrosSerieInputs.querySelectorAll('input'));
+    // Eliminada declaración duplicada
     const numerosSerie = inputs.map(i => i.value.trim()).filter(v => v);
     if (numerosSerie.length !== cantidad) {
       alert('Debés ingresar todos los números de serie.');
@@ -254,7 +254,7 @@ if (movError || !movimientoInsertado) {
 
 const movimiento_id = movimientoInsertado.id;
 
-const inputs = Array.from(nrosSerieInputs.querySelectorAll('input'));
+// Eliminada declaración duplicada
 const unidades = [];
 for (let input of inputs) {
   const nroSerie = input.value.trim();
