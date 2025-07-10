@@ -235,6 +235,7 @@ function actualizarCamposSerie() {
 
   if (parte.trazabilidad) {
     // Eliminada declaración duplicada
+    const inputs = Array.from(nrosSerieInputs.querySelectorAll('input'));
     const numerosSerie = inputs.map(i => i.value.trim()).filter(v => v);
     if (numerosSerie.length !== cantidad) {
       alert('Debés ingresar todos los números de serie.');
